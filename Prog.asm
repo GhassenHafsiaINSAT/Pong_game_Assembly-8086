@@ -3,9 +3,12 @@ STACK SEGMENT PARA STACK
 STACK ENDS ; S is for the SEGMENT
 
 DATA SEGMENT PARA 'DATA'
+	TIME_AUX DB 0 ; variable used when checking of the time has changed
 	BALL_X DW 0Ah ; X position of the ball, DW stands for define word 16 bits
 	BALL_Y DW 0Ah ; Y position of the ball 
 	BALL_SIZE DW 04h ; size of the ball 4 pixels in this example
+	BALL_Velocity_X DW 05h
+	BALL_Velocity_Y DW 02h
 DATA ENDS 
 
 CODE SEGMENT PARA 'CODE' 
@@ -18,17 +21,23 @@ CODE SEGMENT PARA 'CODE'
 	MOV DS,AX 						; save the DS segment the content of AX register   
 	POP AX							; release the top item of the stack to the AX register  
 		
-		MOV AH,00h ; Set the configuration to video mode.  
-		MOV AL,13h ; Choose the video mode.    
-		INT 10h ; Execute the configuration.
-
-		MOV AH,0Bh ; Set the configuration 
-		MOV BH,00h ; to the background color.
-		MOV BL,00h ; set black as background color.
-		INT 10h ; Execute the configuration.  
+		CALL CLEAR_SCREEN
+		CHECK_TIME:
+			MOV AH,2Ch ; get the system time 
+			INT 21h    ; return: CH=hour, CL=minute, DH=second, DL=1/100 seconds 
+			CMP DL,TIME_AUX 
+			JE CHECK_TIME
 		
-		CALL DRAW_BALL
-		
+			MOV TIME_AUX,DL
+			
+			MOV AX,BALL_Velocity_X
+			ADD BALL_X,AX
+			MOV AX,BALL_Velocity_Y
+			ADD BALL_Y,AX
+			CALL CLEAR_SCREEN
+			CALL DRAW_BALL
+			JMP CHECK_TIME
+			
 		RET ; RET is the return, the exit of the procedure.  
 	MAIN ENDP ; P is for procedure.  
 	
@@ -57,6 +66,18 @@ CODE SEGMENT PARA 'CODE'
 			JNG DRAW_BALL_HORIZENTAL 	
 		RET
 	DRAW_BALL ENDP
+	
+	CLEAR_SCREEN PROC NEAR
+		MOV AH,00h ; Set the configuration to video mode.  
+		MOV AL,13h ; Choose the video mode.    
+		INT 10h ; Execute the configuration.
+
+		MOV AH,0Bh ; Set the configuration 
+		MOV BH,00h ; to the background color.
+		MOV BL,00h ; set black as background color.
+		INT 10h ; Execute the configuration.  
+		RET
+	CLEAR_SCREEN ENDP
 	
 CODE ENDS 
 END
