@@ -74,4 +74,21 @@ MOV CX,0Ah ; Set the column (X).
 MOV DX,0Ah ; set the line (Y).
 INT 10h ; execute the configuration.  
 ```
-![image](https://github.com/GhassenHafsiaINSAT/Assembly-8086/assets/110825502/c4206e09-e6f2-413c-9455-4fa3e1285b60)
+## Jumps  
+```assembly
+JMP target_label 
+```
+- Jump to a specified label.
+
+### Conditional Jumps 
+```assembly 
+CMP AX, BX
+JE equal_label
+```
+- Jump to a specified label if a flag is raised after a comparaison process for example.
+  
+	- JE (Jump if Equal)
+   	- JNE (Jump if Not Equal)
+   	- JNLE (Jump if Not Less or Equal)
+   	- JNGE (Jump if Not Greater or Equal)
+   	- JNL (Jump if Not Less)
