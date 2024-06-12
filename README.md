@@ -1,4 +1,10 @@
 # Assembly-8086
+
+## Historical Overview 
+- The first released IBM personal computer **IBM pc**, used Intel 8088 processor, which is a variant of the **8086 architecture**.
+  
+- **DOS** or **MS-DOS** (Miscrosoft Disk Operating System), is the standard operating system for IBM PCs.
+  
 ## Defining Segments in Assembly Language: Code, Data and Stack 
 
 - **In Assembly language, memory is divided into segments**.
@@ -25,8 +31,26 @@ STACK SEGMENT PARA STACK
 STACK ENDS
 ```
 - **STACK ENDS:** Marks the end of the stack segment.
+## Initialization and Segment Setup
+```assembly
+ASSUME CS:CODE, DS:DATA, SS:STACK
+```
+- This line specifies the segment registers that are assumed to point to different segments of memory, so the memory accesses is correctly interpreted and the segments override in the program.
+ 
 
-
+## Most commonly used Interrupts in DOS programming 
+1. **INT 21h** (DOS Services):
+   
+	- It includes file operations (opening, reading, writing, ...), input/output, process control.
+3. **INT 10h** (Video Services):
+	- It controles video display output, including video modes, changing cursor position and setting screen colors.
+4. **INT 16h** (Keyboard services):
+	- It handles keyboard input, detecting key status (pressed/released) and controlling keyboard LEDs.
+5. **INT 13h** (Disk services):
+   - It allows access to disk drives for reading, writing and controlling disk operations. 
+6. **INT 14h** (Real-Time Clock Services):
+   - It allows access to real-time clock and performing time-related operations such as reading system time and date.
+     
 ## Setting the Background
 
 - We will use `INT 10h` interruption.
