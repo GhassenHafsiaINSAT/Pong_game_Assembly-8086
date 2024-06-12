@@ -5,6 +5,7 @@ STACK ENDS ; S is for the SEGMENT
 DATA SEGMENT PARA 'DATA'
 	BALL_X DW 0Ah ; X position of the ball, DW stands for define word 16 bits
 	BALL_Y DW 0Ah ; Y position of the ball 
+	BALL_SIZE DW 04h ; size of the ball 4 pixels in this example
 DATA ENDS 
 
 CODE SEGMENT PARA 'CODE' 
@@ -24,17 +25,38 @@ CODE SEGMENT PARA 'CODE'
 		MOV AH,0Bh ; Set the configuration 
 		MOV BH,00h ; to the background color.
 		MOV BL,00h ; set black as background color.
-		INT 10h ; Execute the configuration.
-
-		MOV AH,0Ch ; set the configuration to writing a pixel.
-		MOV AL,0Fh ; Choose white as color.
-		MOV BH,00h ; choose the page number.
-		MOV CX,BALL_X ; Set the column (X).
-		MOV DX,BALL_Y ; set the line (Y).
-		INT 10h ; execute the configuration.  
+		INT 10h ; Execute the configuration.  
+		
+		CALL DRAW_BALL
 		
 		RET ; RET is the return, the exit of the procedure.  
 	MAIN ENDP ; P is for procedure.  
+	
+	DRAW_BALL PROC NEAR ; near is to say it belongs to the same code segment so the main procedure can call it.  
+		MOV CX,BALL_X ; Set the initial column (X).
+		MOV DX,BALL_Y ; set the initial line (Y).
+		
+		DRAW_BALL_HORIZENTAL: 
+			MOV AH,0Ch ; set the configuration to writing a pixel.
+			MOV AL,0Fh ; Choose white as color.
+			MOV BH,00h ; choose the page number.
+			INT 10h ; execute the configuration.
+			
+			INC CX	; CX = CX + 1, advance to the next column  
+			MOV AX,CX  
+			SUB AX,BALL_X
+			CMP AX,BALL_SIZE
+			JNG DRAW_BALL_HORIZENTAL
+			
+			MOV CX,BALL_X
+			INC DX ; advance to the next line.  
+			
+			MOV AX,DX 
+			SUB AX,BALL_Y
+			CMP AX,BALL_SIZE
+			JNG DRAW_BALL_HORIZENTAL 	
+		RET
+	DRAW_BALL ENDP
 	
 CODE ENDS 
 END
