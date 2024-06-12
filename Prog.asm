@@ -3,6 +3,10 @@ STACK SEGMENT PARA STACK
 STACK ENDS ; S is for the SEGMENT
 
 DATA SEGMENT PARA 'DATA'
+
+	WINDOW_WIDTH DW 140h
+	WINDOW_Height DW 0C8h
+	WINDOW_Bounce DW 6 ; variable to check the collision early 
 	TIME_AUX DB 0 ; variable used when checking of the time has changed
 	BALL_X DW 0Ah ; X position of the ball, DW stands for define word 16 bits
 	BALL_Y DW 0Ah ; Y position of the ball 
@@ -23,18 +27,16 @@ CODE SEGMENT PARA 'CODE'
 		
 		CALL CLEAR_SCREEN
 		CHECK_TIME:
+			
 			MOV AH,2Ch ; get the system time 
 			INT 21h    ; return: CH=hour, CL=minute, DH=second, DL=1/100 seconds 
 			CMP DL,TIME_AUX 
 			JE CHECK_TIME
-		
+			
 			MOV TIME_AUX,DL
 			
-			MOV AX,BALL_Velocity_X
-			ADD BALL_X,AX
-			MOV AX,BALL_Velocity_Y
-			ADD BALL_Y,AX
 			CALL CLEAR_SCREEN
+			CALL MOVE_BALL
 			CALL DRAW_BALL
 			JMP CHECK_TIME
 			
@@ -78,6 +80,46 @@ CODE SEGMENT PARA 'CODE'
 		INT 10h ; Execute the configuration.  
 		RET
 	CLEAR_SCREEN ENDP
+	
+	MOVE_BALL PROC NEAR
+		
+		MOV AX,BALL_Velocity_X
+		ADD BALL_X,AX			; move the ball vetically
+		
+		MOV AX,WINDOW_Bounce
+		CMP BALL_X,AX
+		JL NEG_VELOCITY_X
+		
+		MOV AX,WINDOW_WIDTH
+		SUB AX,BALL_SIZE	
+		SUB AX,WINDOW_Bounce	
+		CMP BALL_X,AX
+		JG NEG_VELOCITY_X
+		
+		
+		
+		MOV AX,BALL_Velocity_Y 
+		ADD BALL_Y,AX			; move the ball vetically
+		
+		MOV AX,WINDOW_Bounce
+		CMP BALL_Y,AX
+		JL NEG_VELOCITY_Y
+		
+		MOV AX,WINDOW_Height
+		SUB AX,BALL_SIZE	
+		SUB AX,WINDOW_Bounce	
+		CMP BALL_Y,AX
+		JG NEG_VELOCITY_Y
+		
+		RET
+		
+		NEG_VELOCITY_X: 
+			NEG BALL_Velocity_X
+			RET
+		NEG_VELOCITY_Y: 
+			NEG BALL_Velocity_Y
+			RET	
+	MOVE_BALL ENDP
 	
 CODE ENDS 
 END
