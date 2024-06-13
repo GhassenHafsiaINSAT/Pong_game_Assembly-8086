@@ -8,8 +8,11 @@ DATA SEGMENT PARA 'DATA'
 	WINDOW_Height DW 0C8h
 	WINDOW_Bounce DW 6 ; variable to check the collision early 
 	TIME_AUX DB 0 ; variable used when checking of the time has changed
-	BALL_X DW 0Ah ; X position of the ball, DW stands for define word 16 bits
-	BALL_Y DW 0Ah ; Y position of the ball 
+	
+	BALL_ORIGINAL_X DW 6Eh
+	BALL_ORIGINAL_Y DW 64h
+	BALL_X DW 0A0h ; X position of the ball, DW stands for define word 16 bits
+	BALL_Y DW 04h ; Y position of the ball 
 	BALL_SIZE DW 04h ; size of the ball 4 pixels in this example
 	BALL_Velocity_X DW 05h
 	BALL_Velocity_Y DW 02h
@@ -88,13 +91,13 @@ CODE SEGMENT PARA 'CODE'
 		
 		MOV AX,WINDOW_Bounce
 		CMP BALL_X,AX
-		JL NEG_VELOCITY_X
+		JL RESET_POSITION
 		
 		MOV AX,WINDOW_WIDTH
 		SUB AX,BALL_SIZE	
 		SUB AX,WINDOW_Bounce	
 		CMP BALL_X,AX
-		JG NEG_VELOCITY_X
+		JG RESET_POSITION
 		
 		
 		
@@ -113,13 +116,22 @@ CODE SEGMENT PARA 'CODE'
 		
 		RET
 		
-		NEG_VELOCITY_X: 
-			NEG BALL_Velocity_X
+		RESET_POSITION: 
+			CALL RESET_BALL_POSITION
 			RET
 		NEG_VELOCITY_Y: 
 			NEG BALL_Velocity_Y
 			RET	
 	MOVE_BALL ENDP
+	
+	RESET_BALL_POSITION PROC NEAR
+		MOV AX,BALL_ORIGINAL_X
+		MOV BALL_X,AX
+		
+		MOV AX,BALL_ORIGINAL_Y
+		MOV BALL_Y,AX
+		RET	
+	RESET_BALL_POSITION ENDP 
 	
 CODE ENDS 
 END
