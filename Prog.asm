@@ -16,6 +16,16 @@ DATA SEGMENT PARA 'DATA'
 	BALL_SIZE DW 04h ; size of the ball 4 pixels in this example
 	BALL_Velocity_X DW 05h
 	BALL_Velocity_Y DW 02h
+	
+	PADDLE_LEFT_X DW 0Ah
+	PADDLE_LEFT_Y DW 0Ah
+	
+	PADDLE_WIDTH DW 05h
+	PADDLE_HEIGHT DW 1Fh
+	
+	PADDLE_RIGHT_X DW 130h
+	PADDLE_RIGHT_Y DW 0Ah
+
 DATA ENDS 
 
 CODE SEGMENT PARA 'CODE' 
@@ -41,6 +51,7 @@ CODE SEGMENT PARA 'CODE'
 			CALL CLEAR_SCREEN
 			CALL MOVE_BALL
 			CALL DRAW_BALL
+			CALL DRAW_PADDLES
 			JMP CHECK_TIME
 			
 		RET ; RET is the return, the exit of the procedure.  
@@ -132,6 +143,57 @@ CODE SEGMENT PARA 'CODE'
 		MOV BALL_Y,AX
 		RET	
 	RESET_BALL_POSITION ENDP 
+	
+	DRAW_PADDLES PROC NEAR 
+		MOV CX,PADDLE_LEFT_X
+		MOV DX,PADDLE_LEFT_Y
+		
+		DRAW_PADDLE_LEFT_HORIZENTAL: 
+			MOV AH,0Ch ; set the configuration to writing a pixel.
+			MOV AL,0Fh ; Choose white as color.
+			MOV BH,00h ; choose the page number.
+			INT 10h ; execute the configuration.
+			
+			INC CX	; CX = CX + 1, advance to the next column  
+			MOV AX,CX  
+			SUB AX,PADDLE_LEFT_X
+			CMP AX,PADDLE_WIDTH
+			JNG DRAW_PADDLE_LEFT_HORIZENTAL	
+			
+			MOV CX,PADDLE_LEFT_X
+			INC DX ; advance to the next line.  
+			
+			MOV AX,DX 
+			SUB AX,PADDLE_LEFT_Y
+			CMP AX,PADDLE_HEIGHT
+			JNG DRAW_PADDLE_LEFT_HORIZENTAL 	
+			
+		MOV CX,PADDLE_RIGHT_X
+		MOV DX,PADDLE_RIGHT_Y
+		
+		DRAW_PADDLE_RIGHT_HORIZENTAL: 
+			MOV AH,0Ch ; set the configuration to writing a pixel.
+			MOV AL,0Fh ; Choose white as color.
+			MOV BH,00h ; choose the page number.
+			INT 10h ; execute the configuration.
+			
+			INC CX	; CX = CX + 1, advance to the next column  
+			MOV AX,CX  
+			SUB AX,PADDLE_RIGHT_X
+			CMP AX,PADDLE_WIDTH
+			JNG DRAW_PADDLE_RIGHT_HORIZENTAL	
+			
+			MOV CX,PADDLE_RIGHT_X
+			INC DX ; advance to the next line.  
+			
+			MOV AX,DX 
+			SUB AX,PADDLE_RIGHT_Y
+			CMP AX,PADDLE_HEIGHT
+			JNG DRAW_PADDLE_RIGHT_HORIZENTAL			
+			
+		RET
+	DRAW_PADDLES ENDP
+	
 	
 CODE ENDS 
 END
