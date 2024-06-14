@@ -35,8 +35,71 @@ STACK ENDS
 ```assembly
 ASSUME CS:CODE, DS:DATA, SS:STACK
 ```
-- This line specifies the segment registers that are assumed to point to different segments of memory, so the memory accesses is correctly interpreted and the segments override in the program.
- 
+- This line specifies the segment registers that are assumed to point to different segments of memory, so the memory accesses is correctly interpreted and the segments override in the program.  
+
+## Registers
+
+1. **AX**: Accumulator register
+	- Used for arithmetic and data transfer operations.
+
+ 	- It can be split into:
+   		- **AH**: High byte of AX.
+   		- **AL**: Low byte of AX.
+
+2. **BX**: Base register
+   	- Often used for holding a base address or a pointer.
+   	  
+   	- It can be split into:
+  		- **BH**: High byte of BX.
+   		- **BL**: Low byte of BX.
+
+3. **CX**: Count register
+	- Commonly used for loop counters and string manipulation.
+
+ 	- It can be split into:
+   		- **CH**: High byte of CX.
+   		- **CL**: Low byte of CX.
+
+4. **DX**: Data register
+	- Used for I/O operations and for storing operands for multiplication and division.
+
+   	- It can be split into:
+   		- **DH**: High byte of DX.
+   		- **DL**: Low byte of DX.
+
+### Pointer and Index Registers
+
+1. **SP**: Stack Pointer
+   
+	- It is a **16-bit register** that **Points** to the **top of the stack**.
+
+2. **BP**: Base Pointer
+   
+	- It is a **16-bit register** used to **reference local variables** within a **stack frame**.
+
+3. **SI**: Source Index
+   
+	- It is a **16-bit register** Used for **string operations** as a pointer to the source string.  
+
+4. **DI**: Destination Index
+	- It is a 16-bit register Used for string operations as a pointer to the destination string.  
+
+### Segment Registers
+
+1. **CS**: Code Segment. Holds the segment address of the code being executed.
+   
+2. **DS**: Data Segment. Points to the segment containing data.
+3. **SS**: Stack Segment. Points to the segment containing the stack.
+4. **ES**: Extra Segment. Used for extra data segment, often for string operations or additional data storage.
+
+### Status and Flag Registers
+
+- **FLAGS** Contain status flags indicating the result of operations. Key flags include:
+  
+	 - **ZF**: Zero Flag. Set if the result of an operation is zero.  
+	 - **CF**: Carry Flag. Set if an arithmetic operation generates a carry or a borrow.  
+	 - **SF**: Sign Flag. Set if the result of an operation is negative.  
+	 - **OF**: Overflow Flag. Set if an arithmetic operation overflows.  
 
 ## Most commonly used Interrupts in DOS programming 
 1. **INT 21h** (DOS Services):
