@@ -20,11 +20,16 @@ DATA SEGMENT PARA 'DATA'
 	PADDLE_LEFT_X DW 0Ah		; Current X position for the left paddle
 	PADDLE_LEFT_Y DW 0Ah		; Current Y position for the left paddle
 	
+	PADDLE_LEFT_POINTS DB 0		; Current points of the left player 
+	
 	PADDLE_RIGHT_X DW 130h		; Current X position for the right paddle
 	PADDLE_RIGHT_Y DW 0Ah		; Current Y position for the right paddle
 	
 	PADDLE_WIDTH DW 05h			; DEFAULT paddle width
 	PADDLE_HEIGHT DW 1Fh		; DEFAULT paddle height
+	
+	PADDLE_RIGHT_POINTS DB 0		; Current points of the right player 
+
 	
 	PADDLE_VELOCITY DW 05h		; DEFAULT paddle velocity
 
@@ -105,18 +110,32 @@ CODE SEGMENT PARA 'CODE'
 		
 		MOV AX,WINDOW_Bounce
 		CMP BALL_X,AX
-		JL RESET_POSITION
+		JL GIVE_POINTS_TO_PLAYER_2
 		
 		MOV AX,WINDOW_WIDTH
 		SUB AX,BALL_SIZE	
 		SUB AX,WINDOW_Bounce	
 		CMP BALL_X,AX
-		JG RESET_POSITION
+		JG GIVE_POINTS_TO_PLAYER_1
 		JMP MOVE_BALL_VERTICALLY 
 		
-		RESET_POSITION: 
-			CALL RESET_BALL_POSITION
+		GIVE_POINTS_TO_PLAYER_1: 
+			INC PADDLE_LEFT_POINTS
+			CALL RESET_BALL_POSITION  ; reset ball position in the center of the screen
+			CMP PADDLE_LEFT_POINTS,05h
+			JGE GAME_OVER
 			RET
+			
+		GIVE_POINTS_TO_PLAYER_2: 
+			INC PADDLE_RIGHT_POINTS
+			CALL RESET_BALL_POSITION
+			CMP PADDLE_RIGHT_POINTS,05h
+			JGE GAME_OVER			
+			RET
+			
+		GAME_OVER:
+			MOV PADDLE_RIGHT_POINTS,00h
+			MOV PADDLE_LEFT_POINTS,00h 
 		
 		MOVE_BALL_VERTICALLY:
 			MOV AX,BALL_Velocity_Y 
