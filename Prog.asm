@@ -8,9 +8,13 @@ DATA SEGMENT PARA 'DATA'
 	WINDOW_Height DW 0C8h
 	WINDOW_Bounce DW 6 			; variable to check the collision early 
 	TIME_AUX DB 0 				; variable used when checking of the time has changed
+	GAME_ACTIVE DB 1
+	WINNER_INDEX DB 0
 	
 	TEXT_PLAYER_ONE_POINTS DB '0','$'
 	TEXT_PLAYER_TWO_POINTS DB '0','$'
+	TEXT_GAME_OVER DB 'GAME OVER', '$'
+	TEXT_GAME_WINNER DB 'PLAYER 0 WON', '$'
 
 	
 	BALL_ORIGINAL_X DW 6Eh		; The starting X position of the ball 
@@ -52,6 +56,8 @@ CODE SEGMENT PARA 'CODE'
 		CALL CLEAR_SCREEN
 		CHECK_TIME:
 			
+			CMP GAME_ACTIVE,00h
+			JE SHOW_GAME_OVER
 			MOV AH,2Ch 			; get the system time 
 			INT 21h    			; return: CH=hour, CL=minute, DH=second, DL=1/100 seconds 
 			CMP DL,TIME_AUX 
@@ -67,6 +73,10 @@ CODE SEGMENT PARA 'CODE'
 			CALL DRAW_SCORE_INTERFACE
 			
 			JMP CHECK_TIME
+			
+			SHOW_GAME_OVER:
+				CALL DRAW_GAME_OVER
+				JMP CHECK_TIME
 			
 		RET 					; RET is the return, the exit of the procedure.  
 	MAIN ENDP 					; P is for procedure.  
@@ -142,11 +152,25 @@ CODE SEGMENT PARA 'CODE'
 			RET
 			
 		GAME_OVER:
-			MOV PLAYER_TWO_POINTS,00h
-			MOV PLAYER_ONE_POINTS,00h 
-			CALL UPDATE_TEXTE_PLAYER_ONE
-			CALL UPDATE_TEXTE_PLAYER_TWO
-			RET
+			CMP PLAYER_ONE_POINTS,05h
+			JNL WINNER_IS_PLAYER_ONE
+			JMP WINNER_IS_PLAYER_TWO
+			
+			WINNER_IS_PLAYER_ONE:
+				MOV WINNER_INDEX,01h
+				JMP CONTINUE_GAME_OVER
+			
+			WINNER_IS_PLAYER_TWO:
+				MOV WINNER_INDEX,02h
+				JMP CONTINUE_GAME_OVER	
+			
+			CONTINUE_GAME_OVER:
+				MOV PLAYER_TWO_POINTS,00h
+				MOV PLAYER_ONE_POINTS,00h 
+				CALL UPDATE_TEXTE_PLAYER_ONE
+				CALL UPDATE_TEXTE_PLAYER_TWO
+				MOV GAME_ACTIVE,00h
+				RET
 		
 		MOVE_BALL_VERTICALLY:
 			MOV AX,BALL_Velocity_Y 
@@ -322,6 +346,44 @@ CODE SEGMENT PARA 'CODE'
 			
 		RET
 	DRAW_PADDLES ENDP
+	
+	DRAW_GAME_OVER PROC NEAR 
+		CALL CLEAR_SCREEN
+		; shows the menu title 
+		MOV AH,02h  	; set cursor position 
+		MOV BH,00h		; set page number  
+		MOV DH,04h		; set row
+		MOV DL,04h		; set column
+		INT 10h
+		
+		MOV AH,09h 						; write string to standard output  
+		LEA DX,TEXT_GAME_OVER  ; give DX a pointer to the string TEXT_PLAYER_ONE_POINTS
+		INT 21h 
+		; shows the winner 
+		MOV AH,02h  	; set cursor position 
+		MOV BH,00h		; set page number  
+		MOV DH,04h		; set row
+		MOV DL,04h		; set column
+		INT 10h
+		
+		CALL UPDATE_WINNER_TEXT
+		
+		MOV AH,09h 						; write string to standard output  
+		LEA DX,TEXT_GAME_WINNER  ; give DX a pointer to the string TEXT_PLAYER_ONE_POINTS
+		INT 21h 
+		
+		; waits for a key press 
+		MOV AH,00h
+		INT 16h
+		RET
+	DRAW_GAME_OVER ENDP
+	
+	UPDATE_WINNER_TEXT PROC NEAR 
+		MOV AL,WINNER_INDEX
+		ADD AL,30h
+		MOV [TEXT_GAME_WINNER+7],AL
+		RET
+	UPDATE_WINNER_TEXT ENDP 
 	
 	MOVE_PADDLES PROC NEAR 
 		MOV AH,01h 
