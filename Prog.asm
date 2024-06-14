@@ -9,6 +9,10 @@ DATA SEGMENT PARA 'DATA'
 	WINDOW_Bounce DW 6 			; variable to check the collision early 
 	TIME_AUX DB 0 				; variable used when checking of the time has changed
 	
+	TEXT_PLAYER_ONE_POINTS DB '0','$'
+	TEXT_PLAYER_TWO_POINTS DB '0','$'
+
+	
 	BALL_ORIGINAL_X DW 6Eh		; The starting X position of the ball 
 	BALL_ORIGINAL_Y DW 64h		; The starting Y position of the ball 
 	BALL_X DW 0A0h 				; Current X position of the ball, DW stands for define word 16 bits
@@ -20,7 +24,7 @@ DATA SEGMENT PARA 'DATA'
 	PADDLE_LEFT_X DW 0Ah		; Current X position for the left paddle
 	PADDLE_LEFT_Y DW 0Ah		; Current Y position for the left paddle
 	
-	PADDLE_LEFT_POINTS DB 0		; Current points of the left player 
+	PLAYER_ONE_POINTS DB 0		; Current points of the left player 
 	
 	PADDLE_RIGHT_X DW 130h		; Current X position for the right paddle
 	PADDLE_RIGHT_Y DW 0Ah		; Current Y position for the right paddle
@@ -28,7 +32,7 @@ DATA SEGMENT PARA 'DATA'
 	PADDLE_WIDTH DW 05h			; DEFAULT paddle width
 	PADDLE_HEIGHT DW 1Fh		; DEFAULT paddle height
 	
-	PADDLE_RIGHT_POINTS DB 0		; Current points of the right player 
+	PLAYER_TWO_POINTS DB 0		; Current points of the right player 
 
 	
 	PADDLE_VELOCITY DW 05h		; DEFAULT paddle velocity
@@ -60,6 +64,8 @@ CODE SEGMENT PARA 'CODE'
 			CALL DRAW_BALL
 			CALL MOVE_PADDLES
 			CALL DRAW_PADDLES
+			CALL DRAW_SCORE_INTERFACE
+			
 			JMP CHECK_TIME
 			
 		RET 					; RET is the return, the exit of the procedure.  
@@ -110,32 +116,37 @@ CODE SEGMENT PARA 'CODE'
 		
 		MOV AX,WINDOW_Bounce
 		CMP BALL_X,AX
-		JL GIVE_POINTS_TO_PLAYER_2
+		JL GIVE_POINTS_TO_PLAYER_TWO
 		
 		MOV AX,WINDOW_WIDTH
 		SUB AX,BALL_SIZE	
 		SUB AX,WINDOW_Bounce	
 		CMP BALL_X,AX
-		JG GIVE_POINTS_TO_PLAYER_1
+		JG GIVE_POINTS_TO_PLAYER_ONE
 		JMP MOVE_BALL_VERTICALLY 
 		
-		GIVE_POINTS_TO_PLAYER_1: 
-			INC PADDLE_LEFT_POINTS
+		GIVE_POINTS_TO_PLAYER_ONE: 
+			INC PLAYER_ONE_POINTS
 			CALL RESET_BALL_POSITION  ; reset ball position in the center of the screen
-			CMP PADDLE_LEFT_POINTS,05h
+			CALL UPDATE_TEXTE_PLAYER_ONE
+			CMP PLAYER_ONE_POINTS,05h
 			JGE GAME_OVER
 			RET
 			
-		GIVE_POINTS_TO_PLAYER_2: 
-			INC PADDLE_RIGHT_POINTS
+		GIVE_POINTS_TO_PLAYER_TWO: 
+			INC PLAYER_TWO_POINTS
 			CALL RESET_BALL_POSITION
-			CMP PADDLE_RIGHT_POINTS,05h
+			CALL UPDATE_TEXTE_PLAYER_TWO
+			CMP PLAYER_TWO_POINTS,05h
 			JGE GAME_OVER			
 			RET
 			
 		GAME_OVER:
-			MOV PADDLE_RIGHT_POINTS,00h
-			MOV PADDLE_LEFT_POINTS,00h 
+			MOV PLAYER_TWO_POINTS,00h
+			MOV PLAYER_ONE_POINTS,00h 
+			CALL UPDATE_TEXTE_PLAYER_ONE
+			CALL UPDATE_TEXTE_PLAYER_TWO
+			RET
 		
 		MOVE_BALL_VERTICALLY:
 			MOV AX,BALL_Velocity_Y 
@@ -210,6 +221,24 @@ CODE SEGMENT PARA 'CODE'
 			
 	MOVE_BALL ENDP
 	
+	UPDATE_TEXTE_PLAYER_ONE PROC NEAR
+		SUB AX,AX 
+		MOV AL,PLAYER_ONE_POINTS
+		
+		ADD AL,30h
+		MOV [TEXT_PLAYER_ONE_POINTS],AL
+		RET
+	UPDATE_TEXTE_PLAYER_ONE ENDP
+	
+	UPDATE_TEXTE_PLAYER_TWO PROC NEAR
+		SUB AX,AX 
+		MOV AL,PLAYER_TWO_POINTS
+		ADD AL,30h
+		MOV [TEXT_PLAYER_TWO_POINTS],AL
+		RET
+	UPDATE_TEXTE_PLAYER_TWO ENDP
+
+	
 	RESET_BALL_POSITION PROC NEAR
 		MOV AX,BALL_ORIGINAL_X
 		MOV BALL_X,AX
@@ -218,6 +247,31 @@ CODE SEGMENT PARA 'CODE'
 		MOV BALL_Y,AX
 		RET	
 	RESET_BALL_POSITION ENDP 
+	
+	DRAW_SCORE_INTERFACE PROC NEAR 
+		
+		MOV AH,02h  	; set cursor position 
+		MOV BH,00h		; set page number  
+		MOV DH,04h		; set row
+		MOV DL,06h		; set column
+		INT 10h
+		
+		MOV AH,09h 						; write string to standard output  
+		LEA DX,TEXT_PLAYER_ONE_POINTS   ; give DX a pointer to the string TEXT_PLAYER_ONE_POINTS
+		INT 21h 
+		
+		MOV AH,02h  	; set cursor position 
+		MOV BH,00h		; set page number  
+		MOV DH,04h		; set row
+		MOV DL,1Fh		; set column
+		INT 10h
+		
+		MOV AH,09h 						; write string to standard output  
+		LEA DX,TEXT_PLAYER_TWO_POINTS   ; give DX a pointer to the string TEXT_PLAYER_ONE_POINTS
+		INT 21h 
+		
+		RET
+	DRAW_SCORE_INTERFACE ENDP
 	
 	DRAW_PADDLES PROC NEAR 
 		MOV CX,PADDLE_LEFT_X
