@@ -15,6 +15,7 @@ DATA SEGMENT PARA 'DATA'
 	TEXT_PLAYER_TWO_POINTS DB '0','$'
 	TEXT_GAME_OVER DB 'GAME OVER', '$'
 	TEXT_GAME_WINNER DB 'PLAYER 0 WON', '$'
+	TEXT_GAME_OVER_RESTART DB 'press R to restart the game', '$'
 
 	
 	BALL_ORIGINAL_X DW 6Eh		; The starting X position of the ball 
@@ -362,7 +363,7 @@ CODE SEGMENT PARA 'CODE'
 		; shows the winner 
 		MOV AH,02h  	; set cursor position 
 		MOV BH,00h		; set page number  
-		MOV DH,04h		; set row
+		MOV DH,06h		; set row
 		MOV DL,04h		; set column
 		INT 10h
 		
@@ -372,10 +373,30 @@ CODE SEGMENT PARA 'CODE'
 		LEA DX,TEXT_GAME_WINNER  ; give DX a pointer to the string TEXT_PLAYER_ONE_POINTS
 		INT 21h 
 		
+		; show the play again message 
+		MOV AH,02h  	; set cursor position 
+		MOV BH,00h		; set page number  
+		MOV DH,08h		; set row
+		MOV DL,04h		; set column
+		INT 10h
+		
+		CALL UPDATE_WINNER_TEXT
+		
+		MOV AH,09h 						; write string to standard output  
+		LEA DX,TEXT_GAME_OVER_RESTART  ; give DX a pointer to the string TEXT_GAME_OVER_RESTART
+		INT 21h 
+		
 		; waits for a key press 
 		MOV AH,00h
 		INT 16h
+		CMP AL,'r'
+		JE RESTART_GAME
+		
 		RET
+		
+		RESTART_GAME:
+			MOV GAME_ACTIVE,01h
+			RET
 	DRAW_GAME_OVER ENDP
 	
 	UPDATE_WINNER_TEXT PROC NEAR 
