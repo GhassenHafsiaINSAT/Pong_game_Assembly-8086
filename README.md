@@ -1,9 +1,9 @@
 # PONG Game in Assembly
 ## Overview
-- This Project is a simple implementation of the classic Pong game.
+- This Project is a simple implementation of the classic Pong game.  
 
-- It is designe to help you learn and practice several key concepts in low-level programming and graphics.
-
+- It is designe to help you learn and practice several key concepts in low-level programming and graphics.  
+- This code was inspired by **Programming Dimensions**'s tutorials.  
 ## Key Learning Points 
 - **Graphic Modes**: Setting video modes for graphical output.
   
